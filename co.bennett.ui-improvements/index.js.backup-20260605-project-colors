@@ -5562,55 +5562,43 @@ const FEATURES = {
       {
         id: "blue",
         label: "Blue",
-        value: "var(--codexpp-project-blue)",
+        value: "var(--color-token-charts-blue, var(--color-token-text-link-foreground))",
         textValue: "var(--codexpp-project-blue-text)",
       },
       {
         id: "green",
         label: "Green",
-        value: "var(--codexpp-project-green)",
+        value: "var(--color-token-charts-green, var(--color-token-text-secondary))",
         textValue: "var(--codexpp-project-green-text)",
       },
       {
         id: "yellow",
         label: "Yellow",
-        value: "var(--codexpp-project-yellow)",
+        value: "var(--color-token-charts-yellow, var(--color-token-text-secondary))",
         textValue: "var(--codexpp-project-yellow-text)",
       },
       {
         id: "red",
         label: "Red",
-        value: "var(--codexpp-project-red)",
+        value: "var(--color-token-charts-red, var(--color-token-text-secondary))",
         textValue: "var(--codexpp-project-red-text)",
       },
       {
         id: "pink",
         label: "Pink",
-        value: "var(--codexpp-project-pink)",
+        value: "var(--pink-400, var(--color-token-charts-purple, var(--color-token-text-link-foreground)))",
         textValue: "var(--codexpp-project-pink-text)",
       },
       {
         id: "purple",
         label: "Purple",
-        value: "var(--codexpp-project-purple)",
+        value: "var(--color-token-charts-purple, var(--color-token-text-link-foreground))",
         textValue: "var(--codexpp-project-purple-text)",
-      },
-      {
-        id: "teal",
-        label: "Teal",
-        value: "var(--codexpp-project-teal)",
-        textValue: "var(--codexpp-project-teal-text)",
-      },
-      {
-        id: "violet",
-        label: "Violet",
-        value: "var(--codexpp-project-violet)",
-        textValue: "var(--codexpp-project-violet-text)",
       },
       {
         id: "gray",
         label: "Gray",
-        value: "var(--codexpp-project-gray)",
+        value: "var(--color-token-text-secondary)",
         textValue: "var(--codexpp-project-gray-text)",
       },
     ];
@@ -5626,45 +5614,23 @@ const FEATURES = {
     style.id = STYLE_ID;
     style.textContent = `
       :root {
-        --codexpp-project-blue: #3b82f6;
-        --codexpp-project-green: #22c55e;
-        --codexpp-project-yellow: #eab308;
-        --codexpp-project-red: #ef4444;
-        --codexpp-project-pink: #ec4899;
-        --codexpp-project-purple: #a855f7;
-        --codexpp-project-teal: #14b8a6;
-        --codexpp-project-violet: #7c3aed;
-        --codexpp-project-gray: #9ca3af;
-        --codexpp-project-blue-text: color-mix(in srgb, var(--codexpp-project-blue) 84%, black);
-        --codexpp-project-green-text: color-mix(in srgb, var(--codexpp-project-green) 72%, black);
-        --codexpp-project-yellow-text: color-mix(in srgb, var(--codexpp-project-yellow) 58%, black);
-        --codexpp-project-red-text: color-mix(in srgb, var(--codexpp-project-red) 82%, black);
-        --codexpp-project-pink-text: color-mix(in srgb, var(--codexpp-project-pink) 78%, black);
-        --codexpp-project-purple-text: color-mix(in srgb, var(--codexpp-project-purple) 82%, black);
-        --codexpp-project-teal-text: color-mix(in srgb, var(--codexpp-project-teal) 78%, black);
-        --codexpp-project-violet-text: color-mix(in srgb, var(--codexpp-project-violet) 86%, black);
-        --codexpp-project-gray-text: color-mix(in srgb, var(--codexpp-project-gray) 60%, black);
+        --codexpp-project-blue-text: var(--color-token-charts-blue, var(--color-token-text-link-foreground));
+        --codexpp-project-green-text: color-mix(in srgb, var(--color-token-charts-green, currentColor) 72%, black);
+        --codexpp-project-yellow-text: color-mix(in srgb, var(--color-token-charts-yellow, currentColor) 42%, black);
+        --codexpp-project-red-text: color-mix(in srgb, var(--color-token-charts-red, currentColor) 82%, black);
+        --codexpp-project-pink-text: color-mix(in srgb, var(--pink-400, var(--color-token-charts-purple, currentColor)) 68%, black);
+        --codexpp-project-purple-text: color-mix(in srgb, var(--color-token-charts-purple, currentColor) 82%, black);
+        --codexpp-project-gray-text: color-mix(in srgb, var(--color-token-text-primary, currentColor) 25%, black);
       }
 
       .electron-dark {
-        --codexpp-project-blue: #60a5fa;
-        --codexpp-project-green: #4ade80;
-        --codexpp-project-yellow: #facc15;
-        --codexpp-project-red: #f87171;
-        --codexpp-project-pink: #f472b6;
-        --codexpp-project-purple: #c084fc;
-        --codexpp-project-teal: #2dd4bf;
-        --codexpp-project-violet: #a78bfa;
-        --codexpp-project-gray: #cbd5e1;
-        --codexpp-project-blue-text: var(--codexpp-project-blue);
-        --codexpp-project-green-text: var(--codexpp-project-green);
-        --codexpp-project-yellow-text: var(--codexpp-project-yellow);
-        --codexpp-project-red-text: var(--codexpp-project-red);
-        --codexpp-project-pink-text: var(--codexpp-project-pink);
-        --codexpp-project-purple-text: var(--codexpp-project-purple);
-        --codexpp-project-teal-text: var(--codexpp-project-teal);
-        --codexpp-project-violet-text: var(--codexpp-project-violet);
-        --codexpp-project-gray-text: var(--codexpp-project-gray);
+        --codexpp-project-blue-text: var(--color-token-text-link-foreground, var(--color-token-charts-blue));
+        --codexpp-project-green-text: var(--color-token-charts-green, var(--color-token-text-primary));
+        --codexpp-project-yellow-text: var(--color-token-charts-yellow, var(--color-token-text-primary));
+        --codexpp-project-red-text: color-mix(in srgb, var(--color-token-charts-red, currentColor) 86%, white);
+        --codexpp-project-pink-text: var(--pink-400, var(--color-token-charts-purple, var(--color-token-text-primary)));
+        --codexpp-project-purple-text: color-mix(in srgb, var(--color-token-charts-purple, currentColor) 88%, white);
+        --codexpp-project-gray-text: var(--color-token-text-secondary);
       }
 
       [${ATTR}="row"] {
