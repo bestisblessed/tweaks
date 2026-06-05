@@ -1058,60 +1058,6 @@ function installStyle() {
       overflow-wrap: anywhere;
     }
 
-    [${VIEW_ATTR}="issue-source"] {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 6px 8px;
-      border: 1px solid var(--color-token-border-light, rgba(127,127,127,.16));
-      border-radius: 6px;
-      background: var(--color-token-main-surface-secondary, transparent);
-      color: var(--color-token-description-foreground, currentColor);
-      font-size: 11px;
-      line-height: 15px;
-      overflow: hidden;
-    }
-
-    [${VIEW_ATTR}="issue-source"] [data-source-main],
-    [${VIEW_ATTR}="issue-source"] [data-source-actions] {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    [${VIEW_ATTR}="issue-source"] [data-source-title] {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--color-token-foreground, currentColor);
-    }
-
-    [${VIEW_ATTR}="issue-source"] [data-source-meta] {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px 8px;
-      opacity: .78;
-    }
-
-    [${VIEW_ATTR}="issue-source"] button {
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: var(--color-token-description-foreground, currentColor);
-      font: inherit;
-      padding: 1px 4px;
-      -webkit-app-region: no-drag;
-    }
-
-    [${VIEW_ATTR}="issue-source"] button:hover,
-    [${VIEW_ATTR}="issue-source"] button:focus-visible {
-      outline: none;
-      background: var(--color-token-list-hover-background, rgba(127,127,127,.10));
-      color: var(--color-token-foreground, currentColor);
-    }
-
     [${VIEW_ATTR}="issue-id"] {
       font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace);
       font-size: 11px;
@@ -1994,12 +1940,6 @@ function mountChatIssueButtonForTarget(state, target) {
     return;
   }
   if (state.chatButtonRow === row && now - state.chatButtonMountedAt < 250) return;
-  if (state.chatButtonRow instanceof HTMLElement && state.chatButtonRow !== row) {
-    const previous = state.chatButtonRow;
-    if (!previous.matches(":hover") && !previous.contains(document.activeElement)) {
-      removeChatIssueButtonForRow(previous);
-    }
-  }
   state.chatButtonRow = row;
   state.chatButtonMountedAt = now;
 
@@ -2047,7 +1987,7 @@ function mountChatIssueButtonForRow(state, row, sidebar = mainSidebar()) {
   button.dataset.projectPath = project.path || "";
   button.dataset.projectLabel = project.label || basenameFor(project.path, "Project");
   button.dataset.chatAriaLabel = row.getAttribute("aria-label") || "";
-  button.dataset.chatText = cleanSidebarChatText(displayLabelFor(row));
+  button.dataset.chatText = displayLabelFor(row);
   button.dataset.chatUpdated = chatUpdatedTextForRow(row);
   button.dataset.chatUrl = sourceUrlForChatRow(row);
   button.title = `Create board issue from ${title}`;
@@ -3844,11 +3784,6 @@ function renderIssueCard(state, project, issue) {
     card.append(description);
   }
 
-  const source = issueSourceChat(issue);
-  if (source) {
-    card.append(renderIssueSourceSummary(state, issue, source));
-  }
-
   const meta = document.createElement("div");
   meta.setAttribute(VIEW_ATTR, "issue-meta");
   meta.className = "flex flex-wrap items-center gap-1";
@@ -3865,11 +3800,10 @@ function renderIssueCard(state, project, issue) {
   if (Array.isArray(issue.comments) && issue.comments.length > 0) {
     meta.append(issuePill(`${issue.comments.length} ${issue.comments.length === 1 ? "comment" : "comments"}`));
   }
+  const source = issueSourceChat(issue);
   if (source) {
     meta.append(issuePill("Chat"));
-    const activeLabel = formatChatLastActive(source.lastUpdated);
-    if (activeLabel) meta.append(issuePill(activeLabel));
-    if (source.url) meta.append(issuePill("Linked"));
+    if (source.url) meta.append(issuePill("Link saved"));
     meta.append(issueButtonPill("Open chat", () => openSourceChat(state, issue)));
   }
   if (meta.childNodes.length > 0) card.append(meta);
@@ -3880,65 +3814,6 @@ function renderIssueCard(state, project, issue) {
   });
 
   return card;
-}
-
-function renderIssueSourceSummary(state, issue, source) {
-  const wrap = document.createElement("div");
-  wrap.setAttribute(VIEW_ATTR, "issue-source");
-
-  const main = document.createElement("div");
-  main.setAttribute("data-source-main", "");
-  const label = document.createElement("span");
-  label.textContent = "Source";
-  const title = document.createElement("span");
-  title.setAttribute("data-source-title", "");
-  title.textContent = source.title || source.text || source.ariaLabel || "Codex chat";
-  main.append(label, title);
-
-  const meta = document.createElement("div");
-  meta.setAttribute("data-source-meta", "");
-  const projectLabel = sourceProjectLabel(source);
-  if (projectLabel) meta.append(sourceMetaText(projectLabel));
-  const activeLabel = formatChatLastActive(source.lastUpdated);
-  if (activeLabel) meta.append(sourceMetaText(activeLabel));
-  const captured = formatDateTime(source.createdAt);
-  if (captured) meta.append(sourceMetaText(`Captured ${captured}`));
-
-  const actions = document.createElement("div");
-  actions.setAttribute("data-source-actions", "");
-  const open = document.createElement("button");
-  open.type = "button";
-  open.textContent = source.url ? "Open source chat" : "Find source chat";
-  open.title = source.url || "Find the matching Codex sidebar chat";
-  open.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    openSourceChat(state, issue);
-  });
-  actions.append(open);
-  if (source.url) {
-    const copy = document.createElement("button");
-    copy.type = "button";
-    copy.textContent = "Copy link";
-    copy.title = source.url;
-    copy.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      copyToClipboard(source.url);
-    });
-    actions.append(copy);
-  }
-
-  wrap.append(main);
-  if (meta.childNodes.length > 0) wrap.append(meta);
-  wrap.append(actions);
-  return wrap;
-}
-
-function sourceMetaText(text) {
-  const span = document.createElement("span");
-  span.textContent = text;
-  return span;
 }
 
 function issuePill(text, options = {}) {
@@ -4126,7 +4001,7 @@ async function createIssueFromChatButton(state, button) {
   button.disabled = true;
   const payload = {
     projectPath: project.path,
-    title: source.title,
+    title: `Continue: ${source.title}`,
     description: chatIssueDescription(source),
     status: "backlog",
     priority: "none",
@@ -4152,18 +4027,14 @@ async function createIssueFromChatButton(state, button) {
 
 function sourceFromChatButton(button) {
   const now = new Date().toISOString();
-  const row = button.closest("div[role='listitem'][aria-label]");
-  const title = cleanSidebarChatText(button.dataset.chatTitle || row?.getAttribute?.("aria-label") || "");
-  const text = cleanSidebarChatText(button.dataset.chatText || row?.textContent || "");
-  const url = button.dataset.chatUrl || sourceUrlForChatRow(row);
   return {
     type: "chat",
-    title,
+    title: button.dataset.chatTitle || "",
     projectPath: button.dataset.projectPath || "",
     projectLabel: button.dataset.projectLabel || "",
-    text,
+    text: button.dataset.chatText || "",
     ariaLabel: button.dataset.chatAriaLabel || "",
-    url,
+    url: button.dataset.chatUrl || "",
     lastUpdated: button.dataset.chatUpdated || "",
     createdFrom: "sidebar",
     createdAt: now,
@@ -4171,23 +4042,20 @@ function sourceFromChatButton(button) {
 }
 
 function chatIssueDescription(source) {
-  const projectLabel = sourceProjectLabel(source);
+  const projectLabel = source.projectLabel || basenameFor(source.projectPath, "Project");
   const parts = [
-    "Created from a Codex sidebar chat.",
     `Source chat: ${source.title}`,
     projectLabel ? `Project: ${projectLabel}` : "",
-    source.url
-      ? `Chat link: ${source.url}`
-      : "Use the Open source chat action on this card to return to the source conversation.",
+    "Use the Open chat action on this card to return to the source conversation.",
   ].filter(Boolean);
-  return parts.join("\n");
+  if (source.url) parts.push(`Chat link: ${source.url}`);
+  return parts.join(" • ");
 }
 
 function chatIssueInitialComment(source) {
-  const projectLabel = sourceProjectLabel(source);
+  const projectLabel = source.projectLabel || basenameFor(source.projectPath, "Project");
   const lines = [
-    "Created from a Codex sidebar chat.",
-    `Chat: ${source.title}`,
+    `Created from Codex sidebar chat: ${source.title}`,
   ];
   if (projectLabel || source.projectPath) {
     lines.push(`Project: ${projectLabel || source.projectPath}`);
@@ -4197,23 +4065,9 @@ function chatIssueInitialComment(source) {
   } else {
     lines.push("Open source chat from the card actions to return to the original conversation.");
   }
-  const activeLabel = formatChatLastActive(source.lastUpdated);
-  if (activeLabel) lines.push(activeLabel);
-  const captured = formatDateTime(source.createdAt);
-  if (captured) lines.push(`Captured: ${captured}`);
+  if (source.lastUpdated) lines.push(`Sidebar timestamp at capture: ${source.lastUpdated}`);
+  if (source.createdAt) lines.push(`Captured: ${source.createdAt}`);
   return lines.join("\n");
-}
-
-function sourceProjectLabel(source) {
-  return source?.projectLabel || basenameFor(source?.projectPath, "");
-}
-
-function formatChatLastActive(value) {
-  const text = String(value || "").replace(/\s+/g, "").trim();
-  if (!text) return "";
-  if (/^\d+mo$/i.test(text)) return `Last active ${text.replace(/mo$/i, "mo")} ago`;
-  if (/^\d+[smhdw]$/i.test(text)) return `Last active ${text} ago`;
-  return `Last active ${text}`;
 }
 
 function issueSourceChat(issue) {

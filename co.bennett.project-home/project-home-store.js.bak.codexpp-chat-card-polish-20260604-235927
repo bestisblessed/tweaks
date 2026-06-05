@@ -467,9 +467,6 @@ function normalizeSource(source) {
     projectLabel: cleanText(source.projectLabel),
     text: cleanText(source.text),
     ariaLabel: cleanText(source.ariaLabel),
-    url: cleanText(source.url),
-    href: cleanText(source.href),
-    route: cleanText(source.route),
     lastUpdated: cleanText(source.lastUpdated),
     createdFrom: cleanText(source.createdFrom),
     createdAt: cleanText(source.createdAt),
@@ -579,11 +576,6 @@ function issueMatchesQuery(issue, needle) {
     ]) : []),
     issue.linear?.identifier,
     issue.linear?.url,
-    issue.source?.title,
-    issue.source?.projectLabel,
-    issue.source?.url,
-    issue.source?.href,
-    issue.source?.route,
   ].map(cleanText).join(" ").toLowerCase();
   return haystack.includes(needle);
 }

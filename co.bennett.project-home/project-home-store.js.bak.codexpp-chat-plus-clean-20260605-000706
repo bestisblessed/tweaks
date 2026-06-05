@@ -579,11 +579,6 @@ function issueMatchesQuery(issue, needle) {
     ]) : []),
     issue.linear?.identifier,
     issue.linear?.url,
-    issue.source?.title,
-    issue.source?.projectLabel,
-    issue.source?.url,
-    issue.source?.href,
-    issue.source?.route,
   ].map(cleanText).join(" ").toLowerCase();
   return haystack.includes(needle);
 }
