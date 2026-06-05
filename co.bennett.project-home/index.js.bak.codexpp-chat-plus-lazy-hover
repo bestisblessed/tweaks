@@ -8,7 +8,6 @@
 const STYLE_ID = "codexpp-project-home-style";
 const BUTTON_ATTR = "data-codexpp-project-home-button";
 const WRAPPER_ATTR = "data-codexpp-project-home-wrapper";
-const ACTION_BAR_ATTR = "data-codexpp-project-home-actionbar";
 const CHAT_BUTTON_ATTR = "data-codexpp-project-home-chat-button";
 const ACTIVE_ATTR = "data-codexpp-project-home-active";
 const VIEW_ATTR = "data-codexpp-project-home-view";
@@ -95,8 +94,6 @@ module.exports = {
     window.removeEventListener("mousedown", state.onSearchMouseDown, true);
     window.removeEventListener("click", state.onSearchClick, true);
     document.removeEventListener("pointerdown", state.onPointerDown, true);
-    document.removeEventListener("pointerover", state.onPointerOver, true);
-    document.removeEventListener("focusin", state.onFocusIn, true);
     document.removeEventListener("click", state.onClick, true);
     document.removeEventListener("keydown", state.onKeyDown, true);
     window.removeEventListener("resize", state.onResize);
@@ -109,7 +106,6 @@ module.exports = {
     state.observer?.disconnect();
     if (state.applyTimer) window.clearTimeout(state.applyTimer);
     for (const timer of state.retryTimers || []) window.clearTimeout(timer);
-    for (const timer of state.chatButtonTimers || []) window.clearTimeout(timer);
     closeProjectHomeContextMenu(state);
     removeProjectHomeView(state);
     clearProjectHomeMarks();
@@ -553,15 +549,10 @@ function startRenderer(self, api) {
     ignoreRouteUntil: 0,
     applyTimer: null,
     retryTimers: [],
-    chatButtonTimers: new Set(),
-    chatButtonRow: null,
-    chatButtonMountedAt: 0,
     onSearchPointerDown: null,
     onSearchMouseDown: null,
     onSearchClick: null,
     onPointerDown: null,
-    onPointerOver: null,
-    onFocusIn: null,
     onClick: null,
     onKeyDown: null,
     onResize: null,
@@ -615,12 +606,6 @@ function startRenderer(self, api) {
     }
     if (!closestHomeButton(event.target)) return;
     stopProjectHomeEvent(event);
-  };
-  state.onPointerOver = (event) => {
-    mountChatIssueButtonForTarget(state, event.target);
-  };
-  state.onFocusIn = (event) => {
-    mountChatIssueButtonForTarget(state, event.target);
   };
   state.onClick = (event) => {
     const chatIssueButton = closestChatIssueButton(event.target);
@@ -801,8 +786,6 @@ function startRenderer(self, api) {
   window.addEventListener("mousedown", state.onSearchMouseDown, true);
   window.addEventListener("click", state.onSearchClick, true);
   document.addEventListener("pointerdown", state.onPointerDown, true);
-  document.addEventListener("pointerover", state.onPointerOver, true);
-  document.addEventListener("focusin", state.onFocusIn, true);
   document.addEventListener("click", state.onClick, true);
   document.addEventListener("keydown", state.onKeyDown, true);
   window.addEventListener("resize", state.onResize);
@@ -856,7 +839,7 @@ function installStyle() {
       outline: none;
     }
 
-    [${ACTION_BAR_ATTR}="true"] {
+    :has(> [${WRAPPER_ATTR}="true"]) {
       display: inline-flex !important;
       align-items: center !important;
     }
@@ -867,7 +850,7 @@ function installStyle() {
     }
 
     [${WRAPPER_ATTR}="true"][${ACTIVE_ATTR}="true"],
-    [${ACTION_BAR_ATTR}="true"][${ACTIVE_ATTR}="true"] {
+    :has(> [${WRAPPER_ATTR}="true"][${ACTIVE_ATTR}="true"]) {
       display: flex !important;
       opacity: 1 !important;
     }
@@ -1845,8 +1828,7 @@ function applyProjectHomeButtons(state) {
     button.setAttribute("aria-label", `Open Project Home for ${label || basenameFor(path, "Project")}`);
     button.setAttribute("aria-keyshortcuts", "Meta+Shift+H");
     button.title = path ? `Project Home: ${path} (Cmd+Shift+H)` : "Project Home (Cmd+Shift+H)";
-    const active = setProjectHomeButtonActive(wrapper, button, state?.current, { path, label });
-    markProjectHomeActionBar(actionBar, active);
+    setProjectHomeButtonActive(wrapper, button, state?.current, { path, label });
 
     if (wrapper.parentElement !== actionBar) {
       actionBar.insertBefore(wrapper, actionsWrapper);
@@ -1855,15 +1837,11 @@ function applyProjectHomeButtons(state) {
     }
   }
 
-  pruneChatIssueButtons(state, sidebar);
+  applyChatIssueButtons(state, sidebar, activeRows);
 
   document.querySelectorAll(`[${WRAPPER_ATTR}="true"]`).forEach((wrapper) => {
     const row = wrapper.closest("div[role='listitem'][aria-label]");
-    if (!(row instanceof HTMLElement) || !activeRows.has(row)) {
-      const actionBar = wrapper.parentElement;
-      wrapper.remove();
-      cleanupProjectHomeActionBar(actionBar);
-    }
+    if (!(row instanceof HTMLElement) || !activeRows.has(row)) wrapper.remove();
   });
 }
 
@@ -1878,96 +1856,59 @@ function removeAllChatIssueButtons() {
   });
 }
 
-function mountChatIssueButtonForTarget(state, target) {
-  const sidebar = mainSidebar();
-  if (!(sidebar instanceof HTMLElement) || !(target instanceof Element) || !sidebar.contains(target)) return;
-  const row = closestChatRowForTarget(target, sidebar, state);
-  if (!(row instanceof HTMLElement)) return;
-
-  const now = Date.now();
-  if (state.chatButtonRow === row && now - state.chatButtonMountedAt < 250) return;
-  state.chatButtonRow = row;
-  state.chatButtonMountedAt = now;
-
-  mountChatIssueButtonForRow(state, row, sidebar);
-  for (const delay of [0, 80, 180]) {
-    const timer = window.setTimeout(() => {
-      state.chatButtonTimers?.delete?.(timer);
-      if (state.disposed || !row.isConnected) return;
-      mountChatIssueButtonForRow(state, row, sidebar);
-    }, delay);
-    state.chatButtonTimers?.add?.(timer);
-  }
-}
-
-function mountChatIssueButtonForRow(state, row, sidebar = mainSidebar()) {
+function applyChatIssueButtons(state, sidebar, projectRows = new Set()) {
   if (!(sidebar instanceof HTMLElement)) return;
   const fallbackProject = state?.current || currentProjectFromSidebar(state);
-  const projectRows = new Set(candidateProjectRows(sidebar));
-  if (!isChatRow(row, sidebar, projectRows, fallbackProject)) {
-    removeChatIssueButtonForRow(row);
-    return;
+  const rows = candidateChatRows(sidebar, projectRows, fallbackProject);
+  const activeRows = new Set(rows);
+
+  for (const row of rows) {
+    const title = chatTitleForRow(row);
+    const project = projectForChatRow(row) || currentProjectFromSidebar(state);
+    if (!title || !project?.path) {
+      removeChatIssueButtonForRow(row);
+      continue;
+    }
+
+    let button = row.querySelector(`[${CHAT_BUTTON_ATTR}="button"]`);
+    if (!(button instanceof HTMLButtonElement)) {
+      button?.remove();
+      button = createChatIssueButton();
+    }
+
+    if (!mountChatIssueButton(row, button)) {
+      button.remove();
+      continue;
+    }
+
+    button.dataset.chatTitle = title;
+    button.dataset.projectPath = project.path || "";
+    button.dataset.projectLabel = project.label || basenameFor(project.path, "Project");
+    button.dataset.chatAriaLabel = row.getAttribute("aria-label") || "";
+    button.dataset.chatText = displayLabelFor(row);
+    button.dataset.chatUpdated = chatUpdatedTextForRow(row);
+    button.title = `Create board issue from ${title}`;
+    button.setAttribute("aria-label", `Create board issue from ${title}`);
   }
 
-  const title = chatTitleForRow(row);
-  const project = projectForChatRow(row, projectRows) || fallbackProject;
-  if (!title || !project?.path) {
-    removeChatIssueButtonForRow(row);
-    return;
-  }
-
-  let button = row.querySelector(`[${CHAT_BUTTON_ATTR}="button"]`);
-  if (!(button instanceof HTMLButtonElement)) {
-    button?.remove();
-    button = createChatIssueButton();
-  }
-
-  if (!mountChatIssueButton(row, button)) {
-    button.remove();
-    return;
-  }
-
-  button.dataset.chatTitle = title;
-  button.dataset.projectPath = project.path || "";
-  button.dataset.projectLabel = project.label || basenameFor(project.path, "Project");
-  button.dataset.chatAriaLabel = row.getAttribute("aria-label") || "";
-  button.dataset.chatText = displayLabelFor(row);
-  button.dataset.chatUpdated = chatUpdatedTextForRow(row);
-  button.title = `Create board issue from ${title}`;
-  button.setAttribute("aria-label", `Create board issue from ${title}`);
-}
-
-function pruneChatIssueButtons(state, sidebar = mainSidebar()) {
-  if (!(sidebar instanceof HTMLElement)) {
-    removeAllChatIssueButtons();
-    return;
-  }
-  const projectRows = new Set(candidateProjectRows(sidebar));
-  const fallbackProject = state?.current || currentProjectFromSidebar(state);
   document.querySelectorAll(`[${CHAT_BUTTON_ATTR}="button"]`).forEach((button) => {
-    if (!(button instanceof HTMLElement) || !sidebar.contains(button)) {
-      button.remove();
-      return;
-    }
-    const row = closestChatRowForTarget(button, sidebar, state);
-    if (!(row instanceof HTMLElement)) {
-      button.remove();
-      return;
-    }
-    if (!isChatRow(row, sidebar, projectRows, fallbackProject) || !chatIssueButtonInsertionPoint(row)) {
-      button.remove();
-    }
+    const row = button.parentElement;
+    if (!(row instanceof HTMLElement) || !activeRows.has(row)) button.remove();
   });
 }
 
-function closestChatRowForTarget(target, sidebar, state = null) {
-  if (!(target instanceof Element) || !(sidebar instanceof HTMLElement)) return null;
-  const projectRows = new Set(candidateProjectRows(sidebar));
-  const fallbackProject = state?.current || currentProjectFromSidebar(state);
-  for (let node = target; node && node !== sidebar; node = node.parentElement) {
-    if (node instanceof HTMLElement && isChatRow(node, sidebar, projectRows, fallbackProject)) return node;
-  }
-  return null;
+function candidateChatRows(sidebar, projectRows = new Set(), fallbackProject = null) {
+  const candidates = Array.from(sidebar.querySelectorAll("button,a,[role='button'],div"))
+    .filter((node) => node instanceof HTMLElement)
+    .filter((node) => isChatRow(node, sidebar, projectRows, fallbackProject));
+  return candidates.filter((node, index, rows) => {
+    if (rows.indexOf(node) !== index) return false;
+    const label = normalize(chatTitleForRow(node));
+    return !rows.some((other) =>
+      other !== node &&
+      other.contains(node) &&
+      normalize(chatTitleForRow(other)) === label);
+  });
 }
 
 function isChatRow(node, sidebar, projectRows = new Set(), fallbackProject = null) {
@@ -1993,7 +1934,7 @@ function isChatRow(node, sidebar, projectRows = new Set(), fallbackProject = nul
     /\bcursor-interaction\b/.test(className);
   if (!isInteractive) return false;
 
-  const project = projectForChatRow(node, projectRows) || fallbackProject;
+  const project = projectForChatRow(node) || fallbackProject;
   return !!project?.path;
 }
 
@@ -2092,23 +2033,6 @@ function createHomeButton(templateButton) {
   return button;
 }
 
-function markProjectHomeActionBar(actionBar, active = false) {
-  if (!(actionBar instanceof HTMLElement)) return;
-  actionBar.setAttribute(ACTION_BAR_ATTR, "true");
-  if (active) {
-    actionBar.setAttribute(ACTIVE_ATTR, "true");
-  } else {
-    actionBar.removeAttribute(ACTIVE_ATTR);
-  }
-}
-
-function cleanupProjectHomeActionBar(actionBar) {
-  if (!(actionBar instanceof HTMLElement)) return;
-  if (actionBar.querySelector(`[${WRAPPER_ATTR}="true"]`)) return;
-  actionBar.removeAttribute(ACTION_BAR_ATTR);
-  actionBar.removeAttribute(ACTIVE_ATTR);
-}
-
 function setProjectHomeButtonActive(wrapper, button, current, project) {
   const active = sameProject(current, {
     path: project.path || project.label,
@@ -2125,7 +2049,6 @@ function setProjectHomeButtonActive(wrapper, button, current, project) {
   if (button instanceof HTMLButtonElement) {
     button.setAttribute("aria-pressed", active ? "true" : "false");
   }
-  return active;
 }
 
 function syncProjectHomeSidebarState(state) {
@@ -5716,11 +5639,10 @@ function projectDetailsForRow(row) {
   return { path: path || label, label: label || basenameFor(path, "Project") };
 }
 
-function projectForChatRow(row, projectRows = null) {
+function projectForChatRow(row) {
   const sidebar = mainSidebar();
   if (!sidebar || !(row instanceof HTMLElement)) return null;
-  const rows = projectRows ? Array.from(projectRows) : candidateProjectRows(sidebar);
-  const projectRow = rows.find((candidate) =>
+  const projectRow = candidateProjectRows(sidebar).find((candidate) =>
     candidate !== row && candidate.contains(row));
   return projectRow ? projectDetailsForRow(projectRow) : null;
 }
@@ -5783,13 +5705,8 @@ function projectActionsButton(row, label) {
 }
 
 function removeHomeButtonForRow(row) {
-  const actionBars = new Set();
-  row.querySelectorAll(`[${WRAPPER_ATTR}="true"]`).forEach((node) => {
-    if (node.parentElement instanceof HTMLElement) actionBars.add(node.parentElement);
-    node.remove();
-  });
+  row.querySelectorAll(`[${WRAPPER_ATTR}="true"]`).forEach((node) => node.remove());
   row.querySelectorAll(`[${BUTTON_ATTR}="button"]`).forEach((node) => node.remove());
-  actionBars.forEach(cleanupProjectHomeActionBar);
 }
 
 function projectPathFor(row) {

@@ -74,7 +74,6 @@ function createIssueStore(options = {}) {
         assignee: values.assignee,
         dueDate: values.dueDate,
         comments: normalizeComments(values.comments),
-        source: normalizeSource(input.source),
         linear: normalizeLinear(input.linear),
         rank: nextRank(db, status),
         createdAt: now,
@@ -111,9 +110,6 @@ function createIssueStore(options = {}) {
       }
       if (Object.prototype.hasOwnProperty.call(patch, "comments")) {
         issue.comments = normalizeComments(patch.comments);
-      }
-      if (Object.prototype.hasOwnProperty.call(patch, "source")) {
-        issue.source = normalizeSource(patch.source);
       }
       if (Object.prototype.hasOwnProperty.call(patch, "linear")) {
         issue.linear = normalizeLinear(patch.linear);
@@ -215,7 +211,6 @@ function createIssueStore(options = {}) {
             assignee: values.assignee,
             dueDate: values.dueDate,
             comments: [],
-            source: {},
             linear: values.linear,
             rank: nextRank(db, values.status),
             createdAt: values.createdAt,
@@ -308,7 +303,6 @@ function normalizeIssue(issue) {
     assignee: cleanText(issue.assignee),
     dueDate: normalizeDueDate(issue.dueDate),
     comments: normalizeComments(issue.comments),
-    source: normalizeSource(issue.source),
     linear: normalizeLinear(issue.linear),
     rank: Number.isFinite(Number(issue.rank)) ? Number(issue.rank) : 0,
     createdAt: cleanText(issue.createdAt) || now,
@@ -456,22 +450,6 @@ function normalizeComments(comments) {
     })
     .filter(Boolean)
     .slice(0, 100);
-}
-
-function normalizeSource(source) {
-  if (!source || typeof source !== "object") return {};
-  const result = {
-    type: cleanText(source.type),
-    title: cleanText(source.title),
-    projectPath: cleanText(source.projectPath),
-    projectLabel: cleanText(source.projectLabel),
-    text: cleanText(source.text),
-    ariaLabel: cleanText(source.ariaLabel),
-    lastUpdated: cleanText(source.lastUpdated),
-    createdFrom: cleanText(source.createdFrom),
-    createdAt: cleanText(source.createdAt),
-  };
-  return Object.fromEntries(Object.entries(result).filter(([, value]) => value));
 }
 
 function normalizeLinear(linear) {
