@@ -1,0 +1,16 @@
+{
+  "repo": "b-nnett/codex-plusplus-project-home",
+  "approvedCommitSha": "1d97062f707caafdac5ed2af8bd9a986341dc912",
+  "installedAt": "2026-06-04T23:54:59.439Z",
+  "storeIndexUrl": "https://b-nnett.github.io/codex-plusplus/store/index.json",
+  "files": {
+    "README.md": "57c23ded6c61dce91a45237f7631fc65b3f52d72f769bafa9e0f05bffa11291b",
+    "index.js": "064bde449333bb0a735286304ef41f012f264b5eab4275c0cdaa38a433a0c809",
+    "manifest.json": "7e3a327a5b4c1409b4370d0cfdcffef6a1e6ddd798ae4aac24c9583b8d442a4e",
+    "mcp-server.js": "46a3ddb064b56a303f5742e1c1dcaf4606512375cfd0f7778e189e57a3bb8a51",
+    "package.json": "10c2851eb57f9450b84a8acca7370dee3b5cfdd31cdcf028ec147c5f28527df6",
+    "project-home-issue-form.js": "8261bb43be5fde43a7ce05e9f7e879834ba08283523314ee3c31de109ac3b156",
+    "project-home-store.js": "7f0ec9f684f427dd93522a5742c09b0a42f87f7acaf6c24e63e2bce89813d42d",
+    "tests/mcp.test.js": "0c621144dfefc7cbdee5711fc45c90c456f9f7da261bdb958ccbbac80e154990"
+  }
+}

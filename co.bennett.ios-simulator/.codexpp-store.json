@@ -1,0 +1,18 @@
+{
+  "repo": "b-nnett/codex-plusplus-ios-simulator",
+  "approvedCommitSha": "2601adbc6e8faff389d30c7afff6ed2985b36554",
+  "installedAt": "2026-06-04T20:18:43.106Z",
+  "storeIndexUrl": "https://b-nnett.github.io/codex-plusplus/store/index.json",
+  "files": {
+    ".gitignore": "6dd402b22386820149bae38a43b4bb1ae4c57910bd654762c4864fb785adf2a4",
+    "LICENSE": "c74108f33291f7018cc7b234358d7241c04505829c699f91fdf830fc48e9fcfd",
+    "README.md": "72c389ac447b66348a54e8c1c306dd15b4ef9a9cd471b21670adcd4450e12045",
+    "assets/annotation-cursor.svg": "5551df3be49f32a1f94656a3f1951d6f73bb89c110432c66f9114cfad9e3a71e",
+    "browser-Bn7IAO-k.js": "274550e828b6161645e245812eda0f77578b30f4735e56cff291005e80db2140",
+    "helpers/sim-capture.swift": "31cf32bbdee8339bb30c92015e84089135d8bc8d880aca09f8a57037a852667b",
+    "helpers/sim-input.m": "0b08f4647082a8d9636bfd6aa17928e4177664f2aa01ea4e79b80f67aafd8e82",
+    "index.js": "a2c893c32c237d8dfa75844501f20aa33c443d7205a9a0fd63d903cf1c240cf2",
+    "manifest.json": "d609b0c0c2b4625547cb425e0b257b23e630b20e7441b8d89b10faf8178fe328",
+    "scripts/cdp-ui-overlay.mjs": "ef37e8ae096004b481a5b5470d2993294ab49888656a4c3b655cde2d4fbf9722"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "repo": "Arconte112/codex-plusplus-followup",
+  "approvedCommitSha": "3d169c4f2f6508c3cf6a89a6531ed939209b5d6c",
+  "installedAt": "2026-06-04T20:19:12.136Z",
+  "storeIndexUrl": "https://b-nnett.github.io/codex-plusplus/store/index.json",
+  "files": {
+    "README.md": "57179a4dce7c2a043a39c6de48c83749dc10c73f00a7536235af32671ec280db",
+    "assets/configuration.png": "dc55953ab5787ff05eb4ee081a046cb0d80e7673bac8020028540a88a9de9174",
+    "assets/followup-panel.png": "08e49640dec08c58c7b76a07e46379418cf32973c93a45c604ea4fbe8047d84e",
+    "index.js": "322dab591232ddb720bb9a8bbf26505e40d3c3ae43ae68aefb052d4025abeddf",
+    "manifest.json": "3aa6a52df344c5d8a2ab1fe4dae59b40cac028da444b56e3c6d8c911449c7986"
+  }
+}

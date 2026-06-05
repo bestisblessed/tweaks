@@ -1,0 +1,13 @@
+{
+  "repo": "b-nnett/codex-plusplus-bennett-ui",
+  "approvedCommitSha": "17156ac0cc3402284b09c13c74754eda70388f50",
+  "installedAt": "2026-06-04T20:19:48.662Z",
+  "storeIndexUrl": "https://b-nnett.github.io/codex-plusplus/store/index.json",
+  "files": {
+    ".gitignore": "345e1b9e15753db59fa2c9cac561bc395e5c7981f450c14f2c1826967d31103a",
+    "LICENSE": "f3a32523883776719925ba1c38274e743870cc61ec86a4f5317146ef67d5f9b5",
+    "README.md": "e2188028c7404eefe028f65025bfe4e37db5665d716c8abfbd6998c405d69991",
+    "index.js": "66ee60ad4abfdbab76766ea6eaf2cba47a3a5b4dd8434ee977b1f65438a825ca",
+    "manifest.json": "63226a4656e190e1de504ab5565cf7e1c3638e97276ebb6746aa1d9b629504ac"
+  }
+}
